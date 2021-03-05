@@ -11,6 +11,9 @@ namespace PB_Task3.Model
     {
         //Properties
         [Key]
+        public int ID { get; set; }
+
+        [Required]
         public int Number { get; set; }
 
         public string Name { get; set; }
@@ -20,7 +23,7 @@ namespace PB_Task3.Model
         //ToString
         public override string ToString()
         {
-            return String.Format("Number: {0} - Name: {1} - Address: {2}", Number, Name, Address);
+            return String.Format("ID: {0} - Number: {1} - Name: {2} - Address: {3}", ID, Number, Name, Address);
         }
     }
 }

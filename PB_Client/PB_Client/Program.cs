@@ -11,22 +11,46 @@ namespace PB_Client
     {
         static void Main(string[] args)
         {
-            GetListOfNameAddress().Wait();
+            GetAll().Wait();
             Console.WriteLine();
 
-            GetNameAddress().Wait();
+            GetNameAddress(83048523).Wait();
+            Console.WriteLine();
 
-            AddAsync().Wait();
-            UpdateAsync().Wait();
-            DeleteAsync().Wait();
+            GetListOfNameAddress("Eirini").Wait();
+            Console.WriteLine();
 
+            //Create a new phobe book 
+            PhoneBookEntry newPB = new PhoneBookEntry() { Number = 83403000, Address = "Kolindros", Name = "Sofia" };
+            AddAsync(newPB).Wait();
+            Console.WriteLine();
+
+            GetAll().Wait();
+            Console.WriteLine();
+
+            //Create a new phobe book 
+            PhoneBookEntry test = new PhoneBookEntry() { Number = 83403000, Address = "Kolindros", Name = "Sofia" };
+            AddAsync(test).Wait();
+            Console.WriteLine();
+
+            //Updating the name and address of a number 
+            PhoneBookEntry updateV = new PhoneBookEntry() { Number = 83403000, Address = "Kolindros Pierias", Name = "Sofia Sarigiannidou" };
+            UpdateAsync(83403000, updateV).Wait();
+
+            GetAll().Wait();
+            Console.WriteLine();
+
+            DeleteAsync(83403000).Wait();
+            GetAll().Wait();
+           
 
         }
 
 
         //Async methods to communicate with the RestFul APIs
-        //GET api/<PhoneBookController>/GetNumbers/Eirini
-        private static async Task GetListOfNameAddress()
+
+        //GET api/<PhoneBookController>
+        private static async Task GetAll()
         {
             try
             {
@@ -40,7 +64,71 @@ namespace PB_Client
                 client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
                 //4. HTTP response from the GET API -- async call, await suspends until task finished
-                HttpResponseMessage response = await client.GetAsync("api/PhoneBook/GetNumbers/Eirini");
+                HttpResponseMessage response = await client.GetAsync("api/PhoneBook");
+
+                response.EnsureSuccessStatusCode();
+                List<PhoneBookEntry> pList = await response.Content.ReadAsAsync<List<PhoneBookEntry>>();
+
+                foreach (PhoneBookEntry pb in pList)
+                {
+                    Console.WriteLine("\n" + pb.ToString());
+                }
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message.ToString());
+            }
+
+        }
+
+        //GET api/<PhoneBookController>/83048523
+        private static async Task GetNameAddress(int number)
+        {
+            try
+            {
+                //1. Class HTTP Client to talk to restFul API
+                HttpClient client = new HttpClient();
+
+                //2.  Base URL for API controller eg. restFull service
+                client.BaseAddress = new Uri("http://localhost:61290");
+
+                //3. Adding a accept header eg. application/json
+                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                //4. HTTP response from the GET API -- async call, await suspends until task finished
+                HttpResponseMessage response = await client.GetAsync("api/PhoneBook/"+number);
+
+                response.EnsureSuccessStatusCode();
+                PhoneBookEntry pb = await response.Content.ReadAsAsync<PhoneBookEntry>();
+
+                Console.WriteLine("\n" + pb.ToString());
+
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message.ToString());
+            }
+
+        }
+
+        //GET api/<PhoneBookController>/GetNumbers/Eirini
+        private static async Task GetListOfNameAddress(string name)
+        {
+            try
+            {
+                //1. Class HTTP Client to talk to restFul API
+                HttpClient client = new HttpClient();
+
+                //2.  Base URL for API controller eg. restFull service
+                client.BaseAddress = new Uri("http://localhost:61290");
+
+                //3. Adding a accept header eg. application/json
+                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                //4. HTTP response from the GET API -- async call, await suspends until task finished
+                HttpResponseMessage response = await client.GetAsync("api/PhoneBook/GetNumbers/"+name);
 
                 response.EnsureSuccessStatusCode();
                 List<PhoneBookEntry> pList = await response.Content.ReadAsAsync<List<PhoneBookEntry>>();
@@ -60,40 +148,10 @@ namespace PB_Client
 
 
 
-        //GET api/<PhoneBookController>/0858382955
-        private static async Task GetNameAddress()
-        {
-            try
-            {
-                //1. Class HTTP Client to talk to restFul API
-                HttpClient client = new HttpClient();
-
-                //2.  Base URL for API controller eg. restFull service
-                client.BaseAddress = new Uri("http://localhost:61290");
-
-                //3. Adding a accept header eg. application/json
-                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
-                //4. HTTP response from the GET API -- async call, await suspends until task finished
-                HttpResponseMessage response = await client.GetAsync("api/PhoneBook/0858382955");
-
-                response.EnsureSuccessStatusCode();
-                PhoneBookEntry pb = await response.Content.ReadAsAsync<PhoneBookEntry>();
-
-                Console.WriteLine("\n" + pb.ToString());
-
-
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message.ToString());
-            }
-
-        }
+      
 
         //Adding a phone book
-        // add a stock listing
-        static async Task AddAsync()
+        static async Task AddAsync(PhoneBookEntry newPB)
         {
             try
             {
@@ -106,13 +164,8 @@ namespace PB_Client
                 //3. Adding a accept header eg. application/json
                 client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
-                
-                // create a new phobe book 
-                PhoneBookEntry newPB = new PhoneBookEntry() { Number = 834039271, Address="Cork", Name="Sean" };
-
-                HttpResponseMessage response = await client.PostAsJsonAsync("api/PhoneBookController", newPB);
+                HttpResponseMessage response = await client.PostAsJsonAsync("api/PhoneBook", newPB);
                 response.EnsureSuccessStatusCode(); // throws an exception if it isnt
-                Console.WriteLine("Phone Book was added!");
 
             }
             catch (Exception e)
@@ -122,38 +175,7 @@ namespace PB_Client
         }
 
         // update an existing phone book entry
-        private static async Task UpdateAsync()
-        {
-            try
-            {
-                //1. Class HTTP Client to talk to restFul API
-                HttpClient client = new HttpClient();
-
-                //2. Base URL for API controller eg. restFull service
-                client.BaseAddress = new Uri("http://localhost:61290");
-
-                //3. Updating the name and address of a number 
-                PhoneBookEntry newPB = new PhoneBookEntry() { Number = 834039271, Address = "Cork", Name = "Sean" };
-                newPB.Name = "Kate";
-                newPB.Address = "Donegal";
-
-
-                //4. HTTP response from the GET API -- async call, await suspends until task finished
-                HttpResponseMessage response = await client.PutAsJsonAsync("api/PhoneBook/834039271", newPB);
-
-                response.EnsureSuccessStatusCode(); // throws an exception if it isnt
-                Console.WriteLine("Phone Book was updated!");
-
-
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-                //or Console.WriteLine(e.ToString());
-            }
-        }
-        // delete a stock listing
-        private static async Task DeleteAsync()
+        private static async Task UpdateAsync(int number, PhoneBookEntry updateValues)
         {
             try
             {
@@ -164,11 +186,36 @@ namespace PB_Client
                 client.BaseAddress = new Uri("http://localhost:61290");
 
                 //3. HTTP response from the GET API -- async call, await suspends until task finished
-                HttpResponseMessage response = await client.DeleteAsync("api/PhoneBook/834039271");
+                HttpResponseMessage response = await client.PutAsJsonAsync("api/PhoneBook/"+number, updateValues);
 
                 response.EnsureSuccessStatusCode(); // throws an exception if it isnt
-                Console.WriteLine("Number was deleted!");
+             
 
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+                //or Console.WriteLine(e.ToString());
+            }
+        }
+
+
+        // delete a stock listing
+        private static async Task DeleteAsync(int number)
+        {
+            try
+            {
+                //1. Class HTTP Client to talk to restFul API
+                HttpClient client = new HttpClient();
+
+                //2. Base URL for API controller eg. restFull service
+                client.BaseAddress = new Uri("http://localhost:61290");
+
+                //3. HTTP response from the GET API -- async call, await suspends until task finished
+                HttpResponseMessage response = await client.DeleteAsync("api/PhoneBook/"+number);
+
+                response.EnsureSuccessStatusCode(); // throws an exception if it isnt
+            
 
             }
             catch (Exception e)

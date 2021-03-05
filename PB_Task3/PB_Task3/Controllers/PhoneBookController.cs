@@ -13,9 +13,39 @@ namespace PB_Task3.Controllers
     [ApiController]
     public class PhoneBookController : ControllerBase
     {
+        //Field
         //Since we have a database we need to talk to it via the dbset
-        private PhoneBookContext ctx = new PhoneBookContext();
-       
+        private PhoneBookContext ctx;
+
+        //Constructor
+        public PhoneBookController()
+        {
+            ctx = new PhoneBookContext();
+            ctx.Database.EnsureCreated();
+
+            //checking if the table PhoneBooK is empty in the database, if not we will seed data into it!
+            if (ctx.PhoneBook.Count() == 0)
+            {
+                SeedData();
+            }
+
+        }
+
+
+        //Methods
+
+        //Seeding data to the database
+        public void SeedData()
+        {
+            //Made the number field unique via indexer and added ID as the primary key
+            PhoneBookEntry pbe = new PhoneBookEntry() { Number = 83048523, Name = "Eirini", Address = "Dublin" };
+            
+            ctx.Add(pbe);
+            
+            ctx.SaveChanges();
+        }
+
+        //RestFul Api Methods
 
         // GET: api/<PhoneBookController>
         [HttpGet]
@@ -32,7 +62,7 @@ namespace PB_Task3.Controllers
 
         }
 
-        // GET api/<PhoneBookController>/0858382955
+        // GET api/<PhoneBookController>/83048523
         //Return the name and address of a specified number
         [HttpGet("{number}")]
         public PhoneBookEntry GetNameAddress(int number)
@@ -83,7 +113,8 @@ namespace PB_Task3.Controllers
                     var duplicateRecord = ctx.PhoneBook.SingleOrDefault(pb=> pb.Number == newPB.Number);
                     if(duplicateRecord == null) //basically we did not find an existing record
                     {
-                        ctx.PhoneBook.Add(newPB);
+                        PhoneBookEntry up = new PhoneBookEntry() { Number = newPB.Number, Name = newPB.Name, Address = newPB.Address};
+                        ctx.PhoneBook.Add(up);
                         ctx.SaveChanges();
 
                         return "A new phone book was added!"; // since we return a string 
@@ -109,7 +140,7 @@ namespace PB_Task3.Controllers
 
 
         //Replace entry for a specified number with a new entry
-        // PUT api/<PhoneBookController>/0830492724
+        // PUT api/<PhoneBookController>/851407260
         [HttpPut("{number}")]
         public string Put(int number, [FromBody] PhoneBookEntry updatePB)
         {
