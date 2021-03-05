@@ -159,8 +159,11 @@ namespace PB_Task3.Controllers
                             //update Name and Address
                             findNumber.Name = updatePB.Name;
                             findNumber.Address = updatePB.Address;
+
                             ctx.SaveChanges();
                             return "Phone Book details were updated!";
+
+                           
                         }
                         else
                         {

@@ -21,27 +21,18 @@ namespace PB_Client
             Console.WriteLine();
 
             //Create a new phobe book 
-            PhoneBookEntry newPB = new PhoneBookEntry() { Number = 83403000, Address = "Kolindros", Name = "Sofia" };
+            PhoneBookEntry newPB = new PhoneBookEntry() { Number = 83403000, Address = "Kolindros", Name = "Sofia" }; //this already exists in my database, so we will get a message stating that!
             AddAsync(newPB).Wait();
             Console.WriteLine();
 
-            GetAll().Wait();
-            Console.WriteLine();
-
-            //Create a new phobe book 
-            PhoneBookEntry test = new PhoneBookEntry() { Number = 83403000, Address = "Kolindros", Name = "Sofia" };
-            AddAsync(test).Wait();
-            Console.WriteLine();
-
+           
             //Updating the name and address of a number 
-            PhoneBookEntry updateV = new PhoneBookEntry() { Number = 83403000, Address = "Kolindros Pierias", Name = "Sofia Sarigiannidou" };
+            PhoneBookEntry updateV = new PhoneBookEntry() { Number = 83403000, Address = "Kolindros-Pierias", Name = "Sofia Sarigiannidou" };
             UpdateAsync(83403000, updateV).Wait();
 
-            GetAll().Wait();
-            Console.WriteLine();
 
             DeleteAsync(83403000).Wait();
-            GetAll().Wait();
+           
            
 
         }
@@ -164,8 +155,22 @@ namespace PB_Client
                 //3. Adding a accept header eg. application/json
                 client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
+                /*
                 HttpResponseMessage response = await client.PostAsJsonAsync("api/PhoneBook", newPB);
                 response.EnsureSuccessStatusCode(); // throws an exception if it isnt
+                */
+
+                HttpResponseMessage response = await client.PostAsJsonAsync("api/PhoneBook", newPB);
+                if (response.IsSuccessStatusCode)
+                {
+                    string postStringReturn = await response.Content.ReadAsAsync<string>();
+                    Console.WriteLine(postStringReturn);
+
+                }
+                else
+                {
+                    Console.WriteLine("Status Code: " + response.StatusCode + "\nReason Phrase: " + response.ReasonPhrase);
+                }
 
             }
             catch (Exception e)
@@ -188,14 +193,23 @@ namespace PB_Client
                 //3. HTTP response from the GET API -- async call, await suspends until task finished
                 HttpResponseMessage response = await client.PutAsJsonAsync("api/PhoneBook/"+number, updateValues);
 
-                response.EnsureSuccessStatusCode(); // throws an exception if it isnt
-             
+                if (response.IsSuccessStatusCode)
+                {
+                    string updateStringReturn = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine(updateStringReturn);
+
+                }
+                else
+                {
+                    Console.WriteLine("Status Code: " + response.StatusCode + "\nReason Phrase: " + response.ReasonPhrase);
+                }
+
 
             }
             catch (Exception e)
             {
-                throw new Exception(e.Message);
-                //or Console.WriteLine(e.ToString());
+                Console.WriteLine(e.ToString());
+               
             }
         }
 
@@ -214,8 +228,17 @@ namespace PB_Client
                 //3. HTTP response from the GET API -- async call, await suspends until task finished
                 HttpResponseMessage response = await client.DeleteAsync("api/PhoneBook/"+number);
 
-                response.EnsureSuccessStatusCode(); // throws an exception if it isnt
-            
+                if (response.IsSuccessStatusCode)
+                {
+                    string deleteStringReturn = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine(deleteStringReturn);
+
+                }
+                else
+                {
+                    Console.WriteLine("Status Code: " + response.StatusCode + "\nReason Phrase: " + response.ReasonPhrase);
+                }
+
 
             }
             catch (Exception e)
